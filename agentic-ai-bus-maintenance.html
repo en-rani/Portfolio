@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic AI & Predictive Maintenance — Public Bus Sector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1B2D;
+    --paper:#EFF2F1;
+    --paper-alt:#E4E9E7;
+    --navy:#0B1B3A;
+    --navy-deep:#081226;
+    --teal:#1E7F72;
+    --teal-light:#8FC7BD;
+    --amber:#D79A2C;
+    --signal:#B23A32;
+    --line:#C9D2CE;
+    --white:#FBFCFB;
+    --disp:'Fraunces', serif;
+    --body:'IBM Plex Sans', sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:var(--body);
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  img,svg{display:block;max-width:100%;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 32px;}
+  section{position:relative;padding:120px 0;}
+  h1,h2,h3{font-family:var(--disp);font-weight:600;letter-spacing:-0.01em;}
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12.5px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--teal);
+    display:flex;align-items:center;gap:10px;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:22px;height:2px;
+    background:var(--teal);
+    display:inline-block;
+  }
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  /* ---------- ROUTE LINE (fixed scroll tracker) ---------- */
+  #routeline{
+    position:fixed;
+    top:0;left:0;right:0;
+    height:52px;
+    z-index:500;
+    background:rgba(11,27,58,0.94);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    display:flex;
+    align-items:center;
+    opacity:0;
+    transform:translateY(-100%);
+    transition:opacity .4s ease, transform .4s ease;
+  }
+  #routeline.show{opacity:1;transform:translateY(0);}
+  .rl-inner{
+    max-width:1080px;margin:0 auto;width:100%;
+    padding:0 32px;
+    display:flex;align-items:center;gap:0;
+    position:relative;
+  }
+  .rl-track{
+    position:relative;
+    flex:1;
+    height:2px;
+    background:rgba(255,255,255,0.18);
+    margin:0 4px;
+  }
+  .rl-fill{
+    position:absolute;left:0;top:0;height:100%;
+    background:var(--teal-light);
+    width:0%;
+    transition:width .15s linear;
+  }
+  .rl-stops{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;}
+  .rl-stop{
+    width:8px;height:8px;border-radius:50%;
+    background:rgba(255,255,255,0.35);
+    position:relative;
+    transform:translateX(-50%);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .rl-stop.active{background:var(--teal-light);box-shadow:0 0 0 4px rgba(143,199,189,0.25);}
+  .rl-label{
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:rgba(255,255,255,0.55);
+    white-space:nowrap;
+    position:absolute;
+    top:-22px;
+    left:50%;
+    transform:translateX(-50%);
+    opacity:0;
+    transition:opacity .2s ease;
+    pointer-events:none;
+  }
+  .rl-stop.active .rl-label, .rl-stop:hover .rl-label{opacity:1;color:var(--teal-light);}
+  .rl-bus{
+    position:absolute;
+    top:50%;
+    transform:translate(-50%,-50%);
+    font-size:14px;
+    left:0%;
+    transition:left .15s linear;
+    filter:drop-shadow(0 0 4px rgba(143,199,189,0.6));
+  }
+  .rl-now{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--teal-light);
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding-left:16px;
+    min-width:150px;
+    display:none;
+  }
+  @media(min-width:720px){.rl-now{display:block;}}
+
+  /* ---------- HERO ---------- */
+  #hero{
+    background:radial-gradient(120% 140% at 20% 0%, #142A54 0%, var(--navy) 45%, var(--navy-deep) 100%);
+    color:var(--white);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:80px 0;
+    overflow:hidden;
+    position:relative;
+  }
+  .hero-line{
+    position:absolute;
+    left:0;right:0;
+    top:62%;
+    height:1px;
+    background:repeating-linear-gradient(90deg, rgba(143,199,189,0.55) 0 14px, transparent 14px 26px);
+  }
+  .hero-dot{
+    position:absolute;
+    top:62%;
+    width:11px;height:11px;
+    border-radius:50%;
+    background:var(--teal-light);
+    box-shadow:0 0 0 6px rgba(143,199,189,0.15), 0 0 18px rgba(143,199,189,0.6);
+    transform:translateY(-50%);
+    animation:travel 9s ease-in-out infinite;
+  }
+  @keyframes travel{
+    0%{left:4%;}
+    48%{left:92%;}
+    50%{left:92%;}
+    98%{left:4%;}
+    100%{left:4%;}
+  }
+  .kth-mark{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.14em;
+    color:rgba(255,255,255,0.55);
+    text-transform:uppercase;
+    margin-bottom:44px;
+  }
+  .hero-eyebrow{
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--teal-light);
+    margin-bottom:26px;
+  }
+  h1.hero-title{
+    font-size:clamp(2.6rem, 6vw, 5.2rem);
+    line-height:1.03;
+    max-width:920px;
+    color:var(--white);
+  }
+  h1.hero-title em{
+    font-style:italic;
+    color:var(--teal-light);
+    font-weight:500;
+  }
+  .hero-sub{
+    margin-top:28px;
+    font-size:clamp(1.05rem,1.7vw,1.35rem);
+    color:rgba(255,255,255,0.75);
+    max-width:640px;
+    font-weight:400;
+  }
+  .hero-byline{
+    margin-top:70px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:rgba(255,255,255,0.45);
+    letter-spacing:0.03em;
+    max-width:520px;
+  }
+  .hero-byline strong{color:rgba(255,255,255,0.7);font-weight:500;}
+
+  /* ---------- generic components ---------- */
+  .lede{
+    font-family:var(--disp);
+    font-weight:400;
+    font-size:clamp(1.4rem,2.6vw,2.05rem);
+    line-height:1.35;
+    max-width:820px;
+    color:var(--navy);
+  }
+  .lede em{color:var(--teal);font-style:italic;}
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:5px 12px;
+    border:1px solid var(--line);
+    border-radius:100px;
+    color:var(--ink);
+    background:var(--white);
+  }
+
+  .quote-question{
+    border-left:3px solid var(--teal);
+    padding:6px 0 6px 26px;
+    font-family:var(--disp);
+    font-style:italic;
+    font-size:clamp(1.2rem,2vw,1.5rem);
+    color:var(--navy);
+    max-width:680px;
+    margin-top:40px;
+  }
+
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:48px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:48px;}
+  @media(max-width:800px){.grid3{grid-template-columns:1fr;}.grid2{grid-template-columns:1fr;}}
+
+  .context-list{margin-top:44px;display:flex;flex-direction:column;gap:0;}
+  .context-item{
+    display:grid;grid-template-columns:64px 1fr;
+    gap:22px;
+    padding:22px 0;
+    border-top:1px solid var(--line);
+  }
+  .context-item:last-child{border-bottom:1px solid var(--line);}
+  .context-num{font-family:var(--mono);color:var(--teal);font-size:13px;padding-top:4px;}
+  .context-item h4{font-family:var(--body);font-weight:600;font-size:1.05rem;margin-bottom:6px;}
+  .context-item p{color:#3C4A55;font-size:0.97rem;max-width:560px;}
+
+  /* ---------- ecosystem diagram ---------- */
+  .eco{
+    margin-top:56px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:0;
+  }
+  .eco-row{display:flex;justify-content:center;margin-bottom:6px;}
+  .eco-box{
+    border:1.5px solid var(--navy);
+    background:var(--white);
+    border-radius:6px;
+    padding:16px 22px;
+    text-align:center;
+    font-weight:600;
+    font-size:0.95rem;
+    min-width:200px;
+  }
+  .eco-box.pta{border-color:var(--signal);}
+  .eco-box small{
+    display:block;font-family:var(--mono);font-weight:400;font-size:10.5px;
+    color:#667;margin-top:4px;text-transform:none;letter-spacing:0;
+  }
+  .eco-arrow-label{
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:#57626B;
+    text-align:center;
+    margin:4px auto;
+    max-width:220px;
+  }
+  .eco-pair{
+    display:flex;
+    justify-content:center;
+    align-items:stretch;
+    gap:70px;
+    margin-top:10px;
+    position:relative;
+  }
+  .eco-pair::before{
+    content:'';
+    position:absolute;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    width:70px;height:1px;
+    background:var(--line);
+  }
+  .eco-box.pto{border-color:var(--amber);}
+  .eco-box.oem{border-color:var(--teal);}
+  .eco-mid-label{
+    font-family:var(--mono);font-size:10px;color:#57626B;
+    align-self:center;white-space:nowrap;
+  }
+  .eco-vline{
+    width:1px;height:34px;background:var(--line);margin:0 auto;
+  }
+
+  /* ---------- methodology split ---------- */
+  .method-card{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:34px;
+  }
+  .method-card h3{font-size:1.15rem;margin-bottom:18px;}
+  .method-card .tag{font-family:var(--mono);font-size:11px;color:var(--teal);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;display:block;}
+  .role-list{list-style:none;margin-top:10px;font-size:0.93rem;color:#3C4A55;}
+  .role-list li{padding:4px 0;border-bottom:1px dashed var(--line);}
+  .role-list li:last-child{border-bottom:none;}
+  .method-q{
+    margin-top:20px;
+    font-family:var(--disp);
+    font-style:italic;
+    font-size:0.98rem;
+    color:var(--navy);
+    padding-top:16px;
+    border-top:1px solid var(--line);
+  }
+
+  /* ---------- pain points / personas ---------- */
+  .section-signal{background:var(--navy-deep);color:var(--white);}
+  .section-signal .eyebrow{color:var(--amber);}
+  .section-signal .eyebrow::before{background:var(--amber);}
+  .section-signal h2{color:var(--white);}
+  .section-signal .lede{color:rgba(255,255,255,0.85);}
+  .section-signal .lede em{color:var(--amber);}
+
+  .persona{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:10px;
+    padding:30px;
+  }
+  .persona-head{
+    display:flex;align-items:center;gap:12px;
+    margin-bottom:20px;
+  }
+  .persona-dot{width:9px;height:9px;border-radius:50%;background:var(--amber);flex-shrink:0;}
+  .persona h3{font-size:1.2rem;color:var(--white);font-family:var(--body);font-weight:600;}
+  .pain{margin-bottom:22px;}
+  .pain h4{font-size:0.92rem;color:var(--amber);margin-bottom:6px;font-weight:600;}
+  .console{
+    font-family:var(--mono);
+    font-size:0.82rem;
+    color:rgba(255,255,255,0.7);
+    background:rgba(0,0,0,0.35);
+    border-left:2px solid var(--amber);
+    padding:10px 14px;
+    margin-top:8px;
+    border-radius:0 4px 4px 0;
+    line-height:1.5;
+  }
+
+  /* after-AI personas (teal variant) */
+  .persona.good{border-color:rgba(143,199,189,0.25);}
+  .persona.good .persona-dot{background:var(--teal-light);}
+  .persona.good .pain h4{color:var(--teal-light);}
+  .persona.good .console{border-left-color:var(--teal-light);}
+
+  /* ---------- OEM barrier hex-ish cards ---------- */
+  .barrier-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;margin-top:48px;background:var(--line);border:1px solid var(--line);}
+  .barrier-cell{background:var(--paper);padding:30px;}
+  .barrier-cell.center{background:var(--navy);color:var(--white);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+  .barrier-cell.center .tag{font-family:var(--mono);font-size:11px;color:var(--teal-light);text-transform:uppercase;letter-spacing:0.08em;}
+  .barrier-cell.center h3{font-size:1.4rem;margin-top:10px;color:var(--white);}
+  .barrier-cell h4{font-size:1rem;margin-bottom:8px;font-weight:600;}
+  .barrier-cell p{font-size:0.9rem;color:#3C4A55;}
+  @media(max-width:800px){.barrier-grid{grid-template-columns:1fr;}}
+
+  /* ---------- concept pillars ---------- */
+  .pillars{margin-top:52px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;background:var(--line);border:1px solid var(--line);}
+  @media(max-width:900px){.pillars{grid-template-columns:1fr;}}
+  .pillar{background:var(--white);padding:32px 28px;display:flex;flex-direction:column;}
+  .pillar .num{font-family:var(--mono);font-size:11px;color:var(--teal);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;}
+  .pillar h3{font-size:1.2rem;margin-bottom:12px;}
+  .pillar p{font-size:0.92rem;color:#3C4A55;flex:1;}
+  .pillar .result{
+    margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
+    font-size:0.85rem;color:var(--teal);font-weight:600;
+  }
+  .flow-diagram{
+    display:flex;align-items:center;justify-content:center;gap:18px;
+    margin-top:56px;flex-wrap:wrap;
+  }
+  .flow-node{
+    border:1.5px solid var(--navy);border-radius:8px;padding:14px 20px;font-weight:600;font-size:0.9rem;background:var(--white);text-align:center;
+  }
+  .flow-node.pto{border-color:var(--amber);}
+  .flow-node.oem{border-color:var(--teal);}
+  .flow-node.agent{background:var(--navy);color:var(--white);border-color:var(--navy);font-family:var(--disp);font-size:1.1rem;padding:16px 28px;}
+  .flow-arrow{font-family:var(--mono);color:#57626B;font-size:1.1rem;}
+
+  /* ---------- benefits venn-ish ---------- */
+  .venn{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:0;margin-top:52px;align-items:stretch;}
+  @media(max-width:800px){.venn{grid-template-columns:1fr;}}
+  .venn-col{padding:30px;}
+  .venn-col.oem{background:#DCE7E4;border-radius:14px 0 0 14px;}
+  .venn-col.mutual{background:var(--teal);color:var(--white);display:flex;flex-direction:column;justify-content:center;text-align:center;z-index:2;box-shadow:0 8px 30px rgba(30,127,114,0.25);border-radius:14px;}
+  .venn-col.pto{background:#EAE0C8;border-radius:0 14px 14px 0;}
+  @media(max-width:800px){.venn-col.oem,.venn-col.pto,.venn-col.mutual{border-radius:14px;margin-bottom:2px;}}
+  .venn-col h4{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;opacity:0.7;}
+  .venn-col.mutual h4{opacity:0.85;color:rgba(255,255,255,0.85);}
+  .venn-col ul{list-style:none;font-size:0.92rem;}
+  .venn-col li{padding:6px 0;}
+  .venn-col.mutual li{font-family:var(--disp);font-style:italic;font-size:1.05rem;padding:8px 0;}
+
+  /* ---------- success measures ---------- */
+  .measures{display:flex;flex-wrap:wrap;gap:14px;margin-top:48px;}
+  .measure{
+    flex:1 1 200px;
+    background:var(--navy);
+    color:var(--white);
+    border-radius:10px;
+    padding:26px 22px;
+  }
+  .measure .idx{font-family:var(--mono);font-size:11px;color:var(--teal-light);}
+  .measure h4{margin-top:10px;font-size:1.02rem;font-weight:600;font-family:var(--body);}
+
+  /* ---------- barriers/enablers paired ---------- */
+  .pair-row{
+    display:grid;grid-template-columns:1fr 1fr;gap:24px;
+    padding:22px 0;border-top:1px solid var(--line);
+  }
+  .pair-row:last-child{border-bottom:1px solid var(--line);}
+  @media(max-width:700px){.pair-row{grid-template-columns:1fr;}}
+  .pair-side h4{font-size:0.95rem;margin-bottom:6px;font-weight:600;}
+  .pair-side.barrier h4{color:var(--signal);}
+  .pair-side.enabler h4{color:var(--teal);}
+  .pair-side p{font-size:0.88rem;color:#3C4A55;}
+  .pair-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#8A8F94;display:block;margin-bottom:4px;}
+
+  /* ---------- roadmap route stops ---------- */
+  .roadmap{position:relative;margin-top:60px;padding-left:44px;}
+  .roadmap::before{
+    content:'';position:absolute;left:11px;top:6px;bottom:6px;width:2px;
+    background:var(--line);
+  }
+  .stop{position:relative;padding-bottom:56px;}
+  .stop:last-child{padding-bottom:0;}
+  .stop::before{
+    content:'';position:absolute;left:-44px;top:2px;
+    width:14px;height:14px;border-radius:50%;
+    background:var(--paper);border:2.5px solid var(--teal);
+  }
+  .stop .phase-tag{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--teal);margin-bottom:8px;}
+  .stop h3{font-size:1.35rem;margin-bottom:16px;}
+  .stop-detail{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;}
+  @media(max-width:700px){.stop-detail{grid-template-columns:1fr;}}
+  .stop-detail div h5{font-size:0.9rem;font-weight:600;margin-bottom:6px;color:var(--navy);}
+  .stop-detail div p{font-size:0.87rem;color:#3C4A55;}
+
+  /* ---------- conclusion ---------- */
+  #conclusion{background:var(--navy);color:var(--white);}
+  #conclusion .eyebrow{color:var(--teal-light);}
+  #conclusion .eyebrow::before{background:var(--teal-light);}
+  .conc-points{margin-top:50px;display:flex;flex-direction:column;gap:0;}
+  .conc-point{
+    display:grid;grid-template-columns:40px 1fr;gap:20px;
+    padding:24px 0;border-top:1px solid rgba(255,255,255,0.12);
+  }
+  .conc-point:last-child{border-bottom:1px solid rgba(255,255,255,0.12);}
+  .conc-point .arrow{color:var(--teal-light);font-family:var(--mono);font-size:1.1rem;}
+  .conc-point h4{font-size:1.08rem;font-weight:600;margin-bottom:8px;}
+  .conc-point ul{list-style:none;font-size:0.9rem;color:rgba(255,255,255,0.65);}
+  .conc-point li{padding:2px 0;}
+  .conc-point p{color:rgba(255,255,255,0.65);font-size:0.92rem;}
+
+  footer{
+    background:var(--navy-deep);
+    color:rgba(255,255,255,0.5);
+    padding:60px 0 48px;
+    text-align:center;
+  }
+  footer h2{
+    font-family:var(--disp);
+    font-style:italic;
+    font-weight:400;
+    color:var(--white);
+    font-size:clamp(1.6rem,3vw,2.2rem);
+    margin-bottom:20px;
+  }
+  footer .foot-names{font-family:var(--mono);font-size:11.5px;letter-spacing:0.04em;}
+
+  ::selection{background:var(--teal);color:white;}
+  :focus-visible{outline:2px solid var(--teal-light);outline-offset:3px;}
+</style>
+</head>
+<body>
+
+<!-- ROUTE LINE SCROLL TRACKER -->
+<nav id="routeline" aria-label="Section progress">
+  <div class="rl-inner">
+    <span style="font-family:var(--mono);font-size:11px;color:rgba(255,255,255,0.55);white-space:nowrap;">ROUTE&nbsp;7</span>
+    <div class="rl-track" id="rlTrack">
+      <div class="rl-fill" id="rlFill"></div>
+      <div class="rl-bus" id="rlBus">🚌</div>
+      <div class="rl-stops" id="rlStops"></div>
+    </div>
+    <div class="rl-now" id="rlNow">Background</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header id="hero">
+  <div class="hero-line"></div>
+  <div class="hero-dot"></div>
+  <div class="wrap">
+    <div class="kth-mark">KTH Royal Institute of Technology — Research Brief</div>
+    <div class="hero-eyebrow">Public Transport · Servitization · Agentic AI</div>
+    <h1 class="hero-title">AI prevents<br><em>breakdowns,</em> not luck.</h1>
+    <p class="hero-sub">Agentic AI &amp; Predictive Maintenance within the Public Bus Sector — closing the gap between what manufacturers sell and what operators actually need, one depot at a time.</p>
+    <div class="hero-byline">
+      <strong>Dhanaya Aditiyo, Yasmine Allawi, Sofia Collard, Natalie Navarrete, Lovisa Skogsberg, Imane Tamim &amp; Ruiling Xu</strong>
+    </div>
+  </div>
+</header>
+
+<!-- BACKGROUND -->
+<section id="background" data-stop="Background">
+  <div class="wrap">
+    <span class="eyebrow">01 · Background</span>
+    <h2 class="lede">Stockholm's bus network is going electric under contracts that were written for diesel. <em>Somewhere between the OEM's spec sheet and the depot floor, the plan stops matching reality.</em></h2>
+    <div class="quote-question">"How can services in the public bus sector be improved to better align with the needs of the operators, thereby generating value for manufacturers?"</div>
+    <div class="context-list">
+      <div class="context-item">
+        <span class="context-num">→</span>
+        <div><h4>A sector under pressure</h4><p>Ten-year tenders, strict punctuality KPIs, and an expensive shift to electric fleets are colliding with operational routines built for an older kind of bus.</p></div>
+      </div>
+      <div class="context-item">
+        <span class="context-num">→</span>
+        <div><h4>The unseen needs of operators</h4><p>What operators actually struggle with day to day rarely reaches the manufacturers designing the next fleet.</p></div>
+      </div>
+      <div class="context-item">
+        <span class="context-num">→</span>
+        <div><h4>An interorganizational focus</h4><p>The study sits deliberately between two organizations — Public Transport Operators and OEMs — rather than inside either one.</p></div>
+      </div>
+      <div class="context-item">
+        <span class="context-num">→</span>
+        <div><h4>Grounded in the field</h4><p>Semi-structured interviews, literature research, and benchmarking studies across both sides of the relationship.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ECOSYSTEM -->
+<section id="ecosystem" data-stop="Ecosystem" style="background:var(--paper-alt);">
+  <div class="wrap">
+    <span class="eyebrow">02 · Stakeholder Ecosystem</span>
+    <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);">Four parties, one bus, and a lot of handoffs.</h2>
+    <div class="eco">
+      <div class="eco-row"><div class="eco-box">Policy Makers<small>Funding, regulatory alignment</small></div></div>
+      <div class="eco-vline"></div>
+      <div class="eco-row"><div class="eco-box pta">Public Transport Authority (PTA)<small>e.g. SL — sets KPIs, governs the tender</small></div></div>
+      <div class="eco-arrow-label">contract compliance, operational KPIs ↕ technical specs, sustainability requirements</div>
+      <div class="eco-pair">
+        <div class="eco-box pto">Public Transport Operators<small>Keolis, Nobina — run daily operations</small></div>
+        <div class="eco-mid-label">↔ maintenance,<br>spare parts,<br>IT integration</div>
+        <div class="eco-box oem">Original Equipment Manufacturers<small>Scania, Volvo — supply &amp; support the fleet</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METHODOLOGY -->
+<section id="method" data-stop="Method">
+  <div class="wrap">
+    <span class="eyebrow">03 · Research Design</span>
+    <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);max-width:700px;">Fifteen conversations, on both sides of the fence.</h2>
+    <div class="grid2">
+      <div class="method-card">
+        <span class="tag">Operators</span>
+        <h3>Identifying the pain points</h3>
+        <p style="font-size:0.92rem;color:#3C4A55;">Semi-structured interviews to understand operator needs, behaviours, and the relationship with manufacturers.</p>
+        <ul class="role-list">
+          <li>COO · Technical Director</li>
+          <li>Business Analyst · Traffic Controller · Bus Driver</li>
+        </ul>
+        <div class="method-q">"What are the biggest obstacles to delivering the plan — driver coverage, vehicle readiness, traffic, events, winter?"</div>
+      </div>
+      <div class="method-card">
+        <span class="tag">OEMs &amp; Experts</span>
+        <h3>Confirming the diagnosis</h3>
+        <p style="font-size:0.92rem;color:#3C4A55;">Validating emerging themes from the manufacturer's side, and understanding their own constraints.</p>
+        <ul class="role-list">
+          <li>Regional Sales Director · Bus Sales Manager · Business Support Manager</li>
+          <li>Software Developer (Engine Control) · Project Manager · Data Compliance Officer</li>
+          <li>E-mobility Expert · 2 Agentic AI Experts</li>
+        </ul>
+        <div class="method-q">"What challenges do you face regarding data sharing, digitalization, and system integration?"</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAIN POINTS -->
+<section id="painpoints" data-stop="Pain Points" class="section-signal">
+  <div class="wrap">
+    <span class="eyebrow">04 · Empirical Findings</span>
+    <h2 class="lede">Before anything else: what does a bad day actually look like <em>on the ground?</em></h2>
+    <div class="grid2">
+      <div class="persona">
+        <div class="persona-head"><span class="persona-dot"></span><h3>Technical Director</h3></div>
+        <div class="pain">
+          <h4>High Asset Cost</h4>
+          <p style="font-size:0.88rem;color:rgba(255,255,255,0.6);">E-buses are expensive, so reserves are small — availability risk is concentrated.</p>
+          <div class="console">"You can't have 15–20% reserve like back in the diesel days… now it's just a few percent because buses are so expensive."</div>
+        </div>
+        <div class="pain">
+          <h4>Data Overload</h4>
+          <div class="console">"We don't really have a good way of handling data today… people need to understand what the data says, not only computers."</div>
+        </div>
+        <div class="pain">
+          <h4>Skills Gap</h4>
+          <div class="console">"We need different competencies among maintenance technicians: more electricians with digital and on-board/IT network skills."</div>
+        </div>
+      </div>
+      <div class="persona">
+        <div class="persona-head"><span class="persona-dot"></span><h3>Traffic Control Lead</h3></div>
+        <div class="pain">
+          <h4>On-Route Breakdown</h4>
+          <div class="console">"Common vehicle faults: AC not working, door issues, engine problems… buses enter limp mode… undrivable in service."</div>
+        </div>
+        <div class="pain">
+          <h4>Unclear Bus Readiness</h4>
+          <div class="console">"We have a digital map showing all buses, but it doesn't show if a bus is actually ready for service. We have to check multiple systems for faults."</div>
+        </div>
+        <div class="pain">
+          <h4>Cryptic Error Messages</h4>
+          <div class="console">"Many are cryptic or misleading, some have barely changed in 20 years. Clear, actionable messages would help a lot."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OEM BARRIERS -->
+<section id="oembarriers" data-stop="OEM Barriers" style="background:var(--paper-alt);">
+  <div class="wrap">
+    <span class="eyebrow">05 · The Other Side</span>
+    <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);max-width:700px;">Manufacturers face their own version of the same problem.</h2>
+    <div class="barrier-grid">
+      <div class="barrier-cell"><h4>Organizational &amp; Governance</h4><p>Every PTO runs its own system, so there is no common integration point to design toward.</p></div>
+      <div class="barrier-cell"><h4>Technical &amp; Data Standardization</h4><p>Heterogeneous systems mean inconsistent data quality, format, and coverage across fleets.</p></div>
+      <div class="barrier-cell center"><span class="tag">Underlying pressure</span><h3>Total Cost of Ownership</h3></div>
+      <div class="barrier-cell"><h4>Capability &amp; Knowledge</h4><p>A knowledge gap among operator technicians, driven by the shift to electrification.</p></div>
+      <div class="barrier-cell"><h4>Regulatory &amp; Compliance</h4><p>GDPR and the EU Data Act limit what raw and personal data can move between organizations.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- THE CONCEPT -->
+<section id="concept" data-stop="The Concept">
+  <div class="wrap">
+    <span class="eyebrow">06 · Analysis of Results</span>
+    <h2 class="lede">The diagnosis: an <em>ecosystem-level coordination failure.</em> The data is rich — it's just locked in separate rooms.</h2>
+    <div class="flow-diagram">
+      <div class="flow-node pto">PTO Real-Time Data</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node agent">AI Agent</div>
+      <div class="flow-arrow">←</div>
+      <div class="flow-node oem">OEM Technical Data</div>
+    </div>
+    <div class="pillars">
+      <div class="pillar">
+        <span class="num">Pillar 01</span>
+        <h3>Smart Diagnostics</h3>
+        <p>A shared knowledge base combining live operational data with OEM technical data to pinpoint fault root causes fast, using an AI-powered case library.</p>
+        <div class="result">→ Shortens repair cycles, minimizes workshop time</div>
+      </div>
+      <div class="pillar">
+        <span class="num">Pillar 02</span>
+        <h3>Predictive Maintenance</h3>
+        <p>Analyzing fault signatures to catch failures before a bus breaks down mid-route — identifying high-risk vehicles before they enter service.</p>
+        <div class="result">→ Reduces unplanned downtime, improves fleet availability</div>
+      </div>
+      <div class="pillar">
+        <span class="num">Pillar 03</span>
+        <h3>Interactive Training Tool</h3>
+        <p>On-demand, interactive troubleshooting built from real and synthetic fault cases, closing the EV skills gap for new and existing technicians.</p>
+        <div class="result">→ Standardizes technician competence, speeds onboarding</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PERSONAS AFTER -->
+<section id="personasafter" data-stop="After AI" class="section-signal" style="background:var(--navy);">
+  <div class="wrap">
+    <span class="eyebrow" style="color:var(--teal-light);">
+    </span>
+    <span class="eyebrow" style="color:var(--teal-light);"><span></span></span>
+    <span class="eyebrow"></span>
+    <h2 class="lede" style="color:white;">The same two roles, <em style="color:var(--teal-light);">one depot later.</em></h2>
+    <div class="grid2">
+      <div class="persona good">
+        <div class="persona-head"><span class="persona-dot"></span><h3>Technical Director</h3></div>
+        <div class="pain"><h4>High Asset Cost, addressed</h4><div class="console">Catches faults before they become in-service breakdowns → reduces unplanned downtime, makes thin reserves stretch further.</div></div>
+        <div class="pain"><h4>Data Overload, addressed</h4><div class="console">"This pattern predicts a failure within X days." Raw data becomes a maintenance insight, not another dashboard.</div></div>
+        <div class="pain"><h4>Skills Gap, addressed</h4><div class="console">Acts as a digital expert colleague: "Here's the likely root cause, based on similar previous cases" — plus short learning modules generated from real fault histories.</div></div>
+      </div>
+      <div class="persona good">
+        <div class="persona-head"><span class="persona-dot"></span><h3>Traffic Control Lead</h3></div>
+        <div class="pain"><h4>On-Route Breakdowns, addressed</h4><div class="console">Risk patterns are spotted early and trigger preventive repairs — fewer buses fail mid-service, fewer "this bus again" moments.</div></div>
+        <div class="pain"><h4>Bus Readiness, addressed</h4><div class="console">A single health score combining active fault codes, predictive risk, and open workshop orders.</div></div>
+        <div class="pain"><h4>Cryptic Errors, addressed</h4><div class="console">"Stop safely, call control. Likely door sensor issue; bus can be restarted after reset." Plain language, generated live.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section id="benefits" data-stop="Benefits">
+  <div class="wrap">
+    <span class="eyebrow">07 · Stakeholder Benefits</span>
+    <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);max-width:700px;">Nobody wins unless both sides win.</h2>
+    <div class="venn">
+      <div class="venn-col oem">
+        <h4>For OEMs</h4>
+        <ul>
+          <li>Faster feedback on products</li>
+          <li>Improved product support</li>
+          <li>A new revenue stream long term</li>
+          <li>A service that generates value through PTOs</li>
+        </ul>
+      </div>
+      <div class="venn-col mutual">
+        <h4>Mutual Benefits</h4>
+        <ul>
+          <li>More efficient public transport</li>
+          <li>Stronger partnership, communication, and shared goals</li>
+        </ul>
+      </div>
+      <div class="venn-col pto">
+        <h4>For PTOs</h4>
+        <ul>
+          <li>Fewer breakdowns, more reliable buses</li>
+          <li>Better scheduling, improved fleet reliability</li>
+          <li>Less manual work</li>
+          <li>Reduced expensive repairs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUCCESS MEASURES -->
+<section id="measures" data-stop="Measures" style="background:var(--paper-alt);">
+  <div class="wrap">
+    <span class="eyebrow">08 · Success Measures</span>
+    <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);max-width:700px;">How we'd know it's actually working.</h2>
+    <div class="measures">
+      <div class="measure"><span class="idx">01</span><h4>Stronger collaboration between OEM and PTO</h4></div>
+      <div class="measure"><span class="idx">02</span><h4>Improved safety performance</h4></div>
+      <div class="measure"><span class="idx">03</span><h4>Increased fleet reliability</h4></div>
+      <div class="measure"><span class="idx">04</span><h4>Operational efficiency &amp; maintenance cost reduction</h4></div>
+      <div class="measure"><span class="idx">05</span><h4>Enhanced user &amp; passenger experience</h4></div>
+    </div>
+  </div>
+</section>
+
+<!-- BARRIERS/ENABLERS -->
+<section id="barriersenablers" data-stop="Barriers">
+  <div class="wrap">
+    <span class="eyebrow">09 · What Could Stop This — and What Makes It Possible</span>
+    <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);max-width:760px;">Every barrier has a matching enabler.</h2>
+    <div style="margin-top:20px;">
+      <div class="pair-row">
+        <div class="pair-side barrier"><span class="pair-label">Barrier</span><h4>Data governance &amp; ownership ambiguity</h4><p>Who owns the agentic AI's insights? Governance is genuinely uncertain.</p></div>
+        <div class="pair-side enabler"><span class="pair-label">Enabler</span><h4>Strong leadership &amp; governance</h4><p>Executive sponsorship and clear decision frameworks, set early.</p></div>
+      </div>
+      <div class="pair-row">
+        <div class="pair-side barrier"><span class="pair-label">Barrier</span><h4>Privacy, security &amp; commercial risk</h4><p>GDPR, cybersecurity concerns, and exposure of proprietary information.</p></div>
+        <div class="pair-side enabler"><span class="pair-label">Enabler</span><h4>Policy &amp; regulatory support</h4><p>Alignment with safety, data, and compliance standards from day one.</p></div>
+      </div>
+      <div class="pair-row">
+        <div class="pair-side barrier"><span class="pair-label">Barrier</span><h4>Data quality &amp; technical integration</h4><p>Fragmented processes, organisational silos, legacy tools and mismatched standards.</p></div>
+        <div class="pair-side enabler"><span class="pair-label">Enabler</span><h4>Technology maturity &amp; expertise</h4><p>Robust platforms, backed by real specialist support.</p></div>
+      </div>
+      <div class="pair-row">
+        <div class="pair-side barrier"><span class="pair-label">Barrier</span><h4>Workforce resistance &amp; skills gap</h4><p>New tools land on technicians who are already stretched thin.</p></div>
+        <div class="pair-side enabler"><span class="pair-label">Enabler</span><h4>Engaged &amp; skilled workforce</h4><p>Training, adoption support, and genuine EV competence-building.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap" data-stop="Roadmap" style="background:var(--paper-alt);">
+  <div class="wrap">
+    <span class="eyebrow">10 · Implementation Plan</span>
+    <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);max-width:700px;">Three stops, not one big leap.</h2>
+    <div class="roadmap">
+      <div class="stop">
+        <div class="phase-tag">Stop 1 — Preparation</div>
+        <h3>Get the ground ready</h3>
+        <div class="stop-detail">
+          <div><h5>Strategic Alignment</h5><p>Define and align PTO–OEM objectives and problems.</p></div>
+          <div><h5>Data Readiness</h5><p>Map, clean, and consolidate data; draft data-sharing and legal agreements.</p></div>
+          <div><h5>Process &amp; Technical Review</h5><p>Analyse current workflows and integration needs.</p></div>
+          <div><h5>Project Setup</h5><p>Establish team, roles, and governance.</p></div>
+        </div>
+      </div>
+      <div class="stop">
+        <div class="phase-tag">Stop 2 — Pilot Project</div>
+        <h3>Prove it at one depot</h3>
+        <div class="stop-detail">
+          <div><h5>Deploy &amp; Integrate</h5><p>Launch a minimum viable AI agent at a selected pilot depot and use case.</p></div>
+          <div><h5>Test &amp; Learn</h5><p>Collect performance data and user feedback, run safely alongside existing procedures.</p></div>
+          <div><h5>Refine &amp; Validate</h5><p>Improve the agent and workflows based on what the pilot actually shows.</p></div>
+        </div>
+      </div>
+      <div class="stop">
+        <div class="phase-tag">Stop 3 — Scaling &amp; Integration</div>
+        <h3>Take it system-wide</h3>
+        <div class="stop-detail">
+          <div><h5>Expand &amp; Integrate</h5><p>Roll out to more depots and bus models; connect to broader enterprise IT.</p></div>
+          <div><h5>Enable Adoption</h5><p>Deliver training and change management; formalise governance and feedback loops.</p></div>
+          <div><h5>Optimise &amp; Sustain</h5><p>Improve algorithms, demonstrate impact, and introduce training &amp; simulation tools.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONCLUSION -->
+<section id="conclusion" data-stop="Conclusion">
+  <div class="wrap">
+    <span class="eyebrow">11 · Conclusion</span>
+    <h2 class="lede" style="color:white;">The breakdowns were never really mechanical. <em style="color:var(--teal-light);">They were organizational.</em></h2>
+    <div class="conc-points">
+      <div class="conc-point"><span class="arrow">→</span><div><h4>A necessity for a more efficient maintenance &amp; training tool</h4><p>Not a nice-to-have — the skills gap and reserve shortage make it urgent.</p></div></div>
+      <div class="conc-point"><span class="arrow">→</span><div><h4>A trickle-down effect on many layers of the organization</h4><p>Proactive maintenance eases stress for drivers, improves the passenger experience, and opens new revenue for OEMs.</p></div></div>
+      <div class="conc-point"><span class="arrow">→</span><div><h4>Embracing AI with caution</h4><ul><li>Data sharing comes with real risk</li><li>Company integrity and legal regulation set the boundaries</li></ul></div></div>
+      <div class="conc-point"><span class="arrow">→</span><div><h4>Initial feedback from interviewees: positive</h4><ul><li>A costly project, but a necessary one</li><li>Valuable for transferring tacit knowledge</li><li>Reduces cost through spare-bus optimisation</li></ul></div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <h2>"AI as a supportive teammate — augmenting human expertise, never replacing it."</h2>
+    <div class="foot-names">DHANAYA ADITIYO · YASMINE ALLAWI · SOFIA COLLARD · NATALIE NAVARRETE · LOVISA SKOGSBERG · IMANE TAMIM · RUILING XU<br>KTH ROYAL INSTITUTE OF TECHNOLOGY</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var stops = [
+    {id:'background', label:'Background'},
+    {id:'ecosystem', label:'Ecosystem'},
+    {id:'method', label:'Method'},
+    {id:'painpoints', label:'Pain Points'},
+    {id:'oembarriers', label:'OEM Barriers'},
+    {id:'concept', label:'The Concept'},
+    {id:'personasafter', label:'After AI'},
+    {id:'benefits', label:'Benefits'},
+    {id:'measures', label:'Measures'},
+    {id:'barriersenablers', label:'Barriers'},
+    {id:'roadmap', label:'Roadmap'},
+    {id:'conclusion', label:'Conclusion'}
+  ];
+  var rlStops = document.getElementById('rlStops');
+  var rlFill = document.getElementById('rlFill');
+  var rlBus = document.getElementById('rlBus');
+  var rlNow = document.getElementById('rlNow');
+  var routeline = document.getElementById('routeline');
+  var hero = document.getElementById('hero');
+
+  stops.forEach(function(s, i){
+    var d = document.createElement('div');
+    d.className = 'rl-stop';
+    d.style.left = (i/(stops.length-1)*100) + '%';
+    d.dataset.id = s.id;
+    var lab = document.createElement('span');
+    lab.className = 'rl-label';
+    lab.textContent = s.label;
+    d.appendChild(lab);
+    d.addEventListener('click', function(){
+      document.getElementById(s.id).scrollIntoView({behavior:'smooth'});
+    });
+    rlStops.appendChild(d);
+  });
+
+  var stopEls = stops.map(function(s){return document.getElementById(s.id);});
+
+  function onScroll(){
+    var heroBottom = hero.getBoundingClientRect().bottom;
+    if(heroBottom < 40){ routeline.classList.add('show'); } else { routeline.classList.remove('show'); }
+
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var scrollTop = window.scrollY;
+    var startOffset = hero.offsetHeight;
+    var totalScrollable = docHeight - startOffset;
+    var progress = Math.min(1, Math.max(0, (scrollTop - startOffset) / totalScrollable));
+    rlFill.style.width = (progress*100) + '%';
+    rlBus.style.left = (progress*100) + '%';
+
+    var activeIdx = 0;
+    var viewportMid = window.scrollY + window.innerHeight*0.35;
+    for(var i=0;i<stopEls.length;i++){
+      if(stopEls[i].offsetTop <= viewportMid) activeIdx = i;
+    }
+    document.querySelectorAll('.rl-stop').forEach(function(el, i){
+      el.classList.toggle('active', i===activeIdx);
+    });
+    rlNow.textContent = stops[activeIdx].label;
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  onScroll();
+})();
+</script>
+
+</body>
+</html>
