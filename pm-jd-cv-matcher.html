@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>产品经理岗位地图 · JD拆解与简历匹配</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F2F4F7;
+    --surface:#FFFFFF;
+    --surface-alt:#E9EDF3;
+    --ink:#1B2130;
+    --ink-soft:#57606F;
+    --ink-mute:#8B93A2;
+    --accent:#2F3B77;
+    --accent-soft:#DDE2F4;
+    --warm:#D97C2B;
+    --warm-soft:#FBEEDD;
+    --good:#1F8F5F;
+    --good-soft:#E1F4EA;
+    --bad:#C24A3F;
+    --bad-soft:#FBE9E6;
+    --border:#DCE1E9;
+    --radius:12px;
+    --font-display:'Space Grotesk',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .wrap{max-width:1040px;margin:0 auto;padding:2.5rem 1.5rem 5rem;}
+  header{margin-bottom:2.5rem;}
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-mute);
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(28px,4vw,40px);
+    margin:0 0 12px;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    color:var(--ink-soft);
+    font-size:16px;
+    max-width:640px;
+    margin:0;
+  }
+  .stat-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+    margin-top:2rem;
+  }
+  .stat-card{
+    background:var(--surface);
+    border:0.5px solid var(--border);
+    border-radius:var(--radius);
+    padding:1rem 1.1rem;
+  }
+  .stat-num{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:26px;
+  }
+  .stat-label{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  section{margin-top:3.5rem;}
+  .section-num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:26px;height:26px;
+    border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    font-family:var(--font-mono);
+    font-size:13px;
+    margin-right:10px;
+  }
+  h2{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:22px;
+    display:flex;
+    align-items:center;
+    margin-bottom:6px;
+  }
+  .section-desc{
+    color:var(--ink-soft);
+    font-size:14.5px;
+    margin:0 0 1.25rem 36px;
+  }
+  textarea{
+    width:100%;
+    min-height:160px;
+    resize:vertical;
+    border:0.5px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    font-family:var(--font-body);
+    font-size:14.5px;
+    color:var(--ink);
+    background:var(--surface);
+  }
+  .matcher-actions{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-top:12px;
+  }
+  button.primary{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:14px;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    border-radius:var(--radius);
+    padding:10px 20px;
+    cursor:pointer;
+  }
+  button.primary:hover{background:#26305F;}
+  .hint{font-size:13px;color:var(--ink-mute);}
+  #summaryPanel{margin-top:1.75rem;display:none;}
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:14px;
+  }
+  .summary-card{
+    background:var(--surface);
+    border:0.5px solid var(--border);
+    border-radius:var(--radius);
+    padding:1rem 1.15rem;
+  }
+  .summary-card h4{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:0 0 6px;
+    font-weight:500;
+  }
+  .best-match{
+    font-weight:600;
+    font-size:15.5px;
+  }
+  .missing-tags{margin-top:1.5rem;}
+  .missing-tags h4{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:0 0 8px;
+    font-weight:500;
+  }
+  .kw-list{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip-kw{
+    font-family:var(--font-mono);
+    font-size:12px;
+    padding:4px 9px;
+    border-radius:999px;
+    border:0.5px solid var(--border);
+    background:var(--surface-alt);
+    color:var(--ink-soft);
+  }
+  .chip-kw.matched{background:var(--good-soft);color:var(--good);border-color:var(--good);}
+  .chip-kw.missing{background:var(--bad-soft);color:var(--bad);border-color:var(--bad);}
+  .chip-kw.neutral{background:var(--surface-alt);color:var(--ink-soft);}
+  .filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:1.5rem;}
+  .filter-group{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{
+    font-family:var(--font-body);
+    font-size:13px;
+    font-weight:500;
+    padding:7px 14px;
+    border-radius:999px;
+    border:0.5px solid var(--border);
+    background:var(--surface);
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .chip.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .job-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:16px;
+  }
+  .job-card{
+    background:var(--surface);
+    border:0.5px solid var(--border);
+    border-radius:var(--radius);
+    padding:1.15rem 1.25rem;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .job-card-head{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:center;
+  }
+  .tag{
+    font-size:11.5px;
+    font-weight:500;
+    padding:3px 9px;
+    border-radius:999px;
+  }
+  .tag.level-校招{background:var(--accent-soft);color:var(--accent);}
+  .tag.level-社招{background:var(--surface-alt);color:var(--ink-soft);}
+  .tag.level-实习{background:var(--good-soft);color:var(--good);}
+  .tag.level-管培生{background:var(--warm-soft);color:var(--warm);}
+  .tag.ai-core{background:var(--warm);color:#fff;}
+  .tag.ai-adjacent{background:var(--warm-soft);color:var(--warm);}
+  .tag.ai-none{background:var(--surface-alt);color:var(--ink-mute);}
+  .score-badge{
+    margin-left:auto;
+    font-family:var(--font-mono);
+    font-size:12px;
+    font-weight:500;
+    padding:3px 9px;
+    border-radius:999px;
+  }
+  .score-badge.good{background:var(--good-soft);color:var(--good);}
+  .score-badge.mid{background:var(--warm-soft);color:var(--warm);}
+  .score-badge.low{background:var(--bad-soft);color:var(--bad);}
+  .job-card h3{
+    font-family:var(--font-display);
+    font-size:16.5px;
+    font-weight:600;
+    margin:2px 0 0;
+  }
+  .company{
+    font-size:12.5px;
+    color:var(--ink-mute);
+    margin:0;
+  }
+  .summary{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin:2px 0 4px;
+  }
+  .empty-state{
+    grid-column:1/-1;
+    text-align:center;
+    color:var(--ink-mute);
+    font-size:14px;
+    padding:2rem 0;
+  }
+  .tips-list{
+    display:grid;
+    gap:10px;
+    padding:0;
+    margin:0 0 0 36px;
+    list-style:none;
+  }
+  .tips-list li{
+    background:var(--surface);
+    border:0.5px solid var(--border);
+    border-radius:var(--radius);
+    padding:0.9rem 1.1rem;
+    font-size:14.5px;
+    color:var(--ink-soft);
+  }
+  .tips-list b{color:var(--ink);font-weight:600;}
+  footer{
+    margin-top:4rem;
+    padding-top:1.5rem;
+    border-top:0.5px solid var(--border);
+    font-size:12.5px;
+    color:var(--ink-mute);
+  }
+  @media (max-width:560px){
+    .section-desc{margin-left:0;}
+    .tips-list{margin-left:0;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">JD 拆解 · 简历匹配工具</div>
+    <h1>产品经理岗位地图</h1>
+    <p class="sub">整理自 17 个不重复的 BOSS直聘产品经理类职位（覆盖硬件、AI、B2B、创意、运营等方向）。粘贴你的简历，看看每个岗位的关键词匹配情况，找到最值得投递的方向。</p>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-num">17</div><div class="stat-label">不重复岗位</div></div>
+      <div class="stat-card"><div class="stat-num">35%</div><div class="stat-label">核心 AI 岗位</div></div>
+      <div class="stat-card"><div class="stat-num">29%</div><div class="stat-label">AI 关联岗位</div></div>
+      <div class="stat-card"><div class="stat-num">53%</div><div class="stat-label">校招/实习/管培生</div></div>
+    </div>
+  </header>
+
+  <section id="matcherSection">
+    <h2><span class="section-num">1</span>粘贴简历，检测匹配度</h2>
+    <p class="section-desc">纯文本即可，不需要按格式粘贴。分析只在你的浏览器里进行，不会上传或保存。</p>
+    <textarea id="cvInput" placeholder="把简历正文粘贴进来，例如：负责xx产品从0到1的规划与设计，主导需求调研、竞品分析与PRD撰写，推动跨部门协作完成上线，期间产品DAU增长30%..."></textarea>
+    <div class="matcher-actions">
+      <button class="primary" id="analyzeBtn">分析匹配度 →</button>
+      <span class="hint">会对下方全部 17 个岗位重新打分排序</span>
+    </div>
+
+    <div id="summaryPanel">
+      <div class="summary-grid">
+        <div class="summary-card">
+          <h4>最佳匹配岗位</h4>
+          <div class="best-match" id="bestMatchName">-</div>
+        </div>
+        <div class="summary-card">
+          <h4>最佳匹配分数</h4>
+          <div class="best-match" id="bestMatchScore">-</div>
+        </div>
+        <div class="summary-card">
+          <h4>整体平均匹配度</h4>
+          <div class="best-match" id="avgScore">-</div>
+        </div>
+      </div>
+      <div class="missing-tags">
+        <h4>简历里较少体现、但多个岗位都在看的技能</h4>
+        <div class="kw-list" id="globalMissing"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="browserSection">
+    <h2><span class="section-num">2</span>浏览全部岗位</h2>
+    <p class="section-desc">分析简历后，卡片会按匹配度自动排序，并标出你简历里已覆盖 / 缺失的关键词。</p>
+
+    <div class="filters">
+      <div class="filter-group" data-filter="level">
+        <button class="chip active" data-value="all">全部类型</button>
+        <button class="chip" data-value="校招">校招</button>
+        <button class="chip" data-value="实习">实习</button>
+        <button class="chip" data-value="管培生">管培生</button>
+        <button class="chip" data-value="社招">社招</button>
+      </div>
+      <div class="filter-group" data-filter="ai">
+        <button class="chip active" data-value="all">全部AI程度</button>
+        <button class="chip" data-value="core">核心AI</button>
+        <button class="chip" data-value="adjacent">AI关联</button>
+        <button class="chip" data-value="none">无AI</button>
+      </div>
+    </div>
+
+    <div class="job-grid" id="jobGrid"></div>
+  </section>
+
+  <section>
+    <h2><span class="section-num">3</span>简历优化建议</h2>
+    <p class="section-desc">基于这批 JD 的共性提炼，投递前逐条自查一遍。</p>
+    <ul class="tips-list">
+      <li><b>照抄JD原词。</b>如果JD写"跨部门协作推动落地"，简历里就别写"配合同事完成"——用人方在筛选时经常直接按关键词搜索。</li>
+      <li><b>把职责改写成结果。</b>"负责需求梳理"不如"梳理XX需求，推动3个跨部门团队在6周内完成上线，DAU提升20%"有说服力，尽量每条经历都补上可量化的数字。</li>
+      <li><b>投AI岗位前先补技术颗粒度。</b>核心AI岗位普遍要求能说清 Prompt、RAG、Agent、多模态这类具体技术名词，只写"熟悉AI"很难过筛。</li>
+      <li><b>投社招岗位要突出"独立负责全流程"。</b>这批JD里的社招岗大多要求3年以上经验、能独立把控需求到上线的全过程，简历要体现你独立决策的部分，而不只是执行。</li>
+      <li><b>投校招/实习岗位要突出学习速度和实际项目。</b>这类JD更看重逻辑思维、快速上手能力和实习/竞赛项目，成绩单和课程项目也值得写进去。</li>
+      <li><b>工具关键词别漏。</b>Axure、墨刀、PRD/SRS撰写这些词出现频率很高，如果你真的用过，一定要在简历里点名工具名而不是笼统写"熟悉产品设计"。</li>
+    </ul>
+  </section>
+
+  <footer>
+    数据来源：用户提供的 20 张 BOSS直聘截图，去重后得到 17 个岗位。匹配分析基于关键词命中率，仅供参考，不能完全替代真实的岗位要求判断。
+  </footer>
+
+</div>
+
+<script>
+const jobs = [
+  {id:1,title:'硬件产品经理(家电)',company:'小米',level:'校招',aiTier:'none',
+   deadline:'2026.06.30 截止 · 2026届',
+   summary:'与研发/设计/市场/销售协同创新家电产品，制定品类战略与产品路线图，管理硬件产品全生命周期。',
+   keywords:['产品设计','产品路线图','竞争优势','消费者洞察','跨部门协作','英语流利','逻辑思维','产品实习经历']},
+  {id:2,title:'AI产品经理(A170705)',company:'未公开',level:'社招',aiTier:'core',
+   deadline:'长期招聘',
+   summary:'负责内部AI Agent/Workflow/Copilot产品规划设计，覆盖RAG、Prompt、多智能体等技术落地，建立效果评估体系。',
+   keywords:['AI Agent','Workflow','RAG','Prompt','多智能体','数据分析','SQL','用户研究','效果评估','跨部门协作']},
+  {id:3,title:'产品经理',company:'美的集团',level:'校招',aiTier:'adjacent',
+   deadline:'2025-2026届 · 同步招实习生',
+   summary:'加入美的软件工程院，负责云计算基础设施与数字化中台相关产品设计与实现。',
+   keywords:['云计算','数字化中台','软件工程','资深产品经理','技术底座']},
+  {id:4,title:'产品经理',company:'大疆创新',level:'社招',aiTier:'none',
+   deadline:'2周内活跃',
+   summary:'负责官网及互联网服务信息架构设计，关注流量获取/转化与广告投放分析，需3年以上互联网产品经验。',
+   keywords:['信息架构','用户增长','内容产品','电商产品','大数据产品','广告投放','流量转化','3年经验','英语良好']},
+  {id:5,title:'产品经理(AI)',company:'服装行业',level:'社招',aiTier:'core',
+   deadline:'长期招聘',
+   summary:'推进服装行业Agent智能产品建设（选品定款/趋势预测），研究多模态模型落地pipeline，需3年以上产品管理经验。',
+   keywords:['Agent','多模态模型','PLM','选品出图','趋势预测','plan','tool usage','memory','multi-agent','3年经验']},
+  {id:6,title:'产品经理(企业信息化)',company:'未公开',level:'社招',aiTier:'none',
+   deadline:'长期招聘',
+   summary:'负责企业信息化项目需求调研、蓝图规划、原型设计与落地，需熟练使用Axure/墨刀。',
+   keywords:['Axure','墨刀','PRD','流程图','企业信息化','需求调研','测试用例','项目管理']},
+  {id:7,title:'ai产品经理',company:'未公开',level:'社招',aiTier:'core',
+   deadline:'2026.12.31 截止 · 毕业时间不限',
+   summary:'负责AI产品的市场调研、需求分析、功能定义与策略制定，独立负责AI产品全周期管理。',
+   keywords:['AI技术理解','市场分析','产品规划','全周期管理','跨部门沟通','行业趋势']},
+  {id:8,title:'产品经理',company:'未公开',level:'校招',aiTier:'none',
+   deadline:'2026届应届',
+   summary:'负责产品全生命周期管理，深度挖掘用户需求，结合市场分析与竞品研究提出改进建议。',
+   keywords:['产品全生命周期','竞品研究','产品原型','需求梳理','计算机/软件工程','逻辑思维']},
+  {id:9,title:'产品开发-管培生',company:'美妆行业',level:'管培生',aiTier:'none',
+   deadline:'2026.06.30 截止 · 2026届',
+   summary:'负责产品策划（核心卖点/成本/开发周期）、项目管理（跨部门协同）与产品上市准备，热爱化妆品行业。',
+   keywords:['产品策划','项目管理','化妆品配方','成本控制','产品手册','跨部门协作']},
+  {id:10,title:'创意产品经理',company:'未公开',level:'社招',aiTier:'none',
+   deadline:'长期招聘',
+   summary:'基于用户行为数据挖掘设计方向，搭建设计师资源库与联名合作模式，设计用户共创机制并验证PMF。',
+   keywords:['用户共创','设计资源整合','联名合作','PMF验证','产品矩阵','数据驱动']},
+  {id:11,title:'AI产品经理(仅招26年校招)',company:'未公开',level:'校招',aiTier:'core',
+   deadline:'仅招2026届 · 硕士优先',
+   summary:'负责AI产品/云计算产品的竞品分析、需求梳理与原型设计，硕士及以上学历，计算机相关专业优先。',
+   keywords:['竞品分析','原型设计','PRD','云计算','需求文档','硕士学历']},
+  {id:12,title:'产品运营实习生',company:'未公开',level:'实习',aiTier:'adjacent',
+   deadline:'每周4天+ · 6个月以上优先',
+   summary:'负责产品版本宣发（内容策划/节奏规划）与数据监控，结合AI训练与工具使用提升宣发效率。',
+   keywords:['版本宣发','内容策划','数据监控','AI工具使用','跨团队协同']},
+  {id:13,title:'AI产品运营实习生',company:'未公开',level:'实习',aiTier:'core',
+   deadline:'2027届优先 · 每周5-6天',
+   summary:'协助AI产品日常运营，包括Prompt模板整理、用户调研、社群运营，需了解ChatGPT/扣子等AI工具。',
+   keywords:['Prompt模板','社群运营','用户调研','ChatGPT','AI工具','运营复盘']},
+  {id:14,title:'产品解决方案和运营实习生',company:'跨境电商(国际化商业产品部)',level:'实习',aiTier:'adjacent',
+   deadline:'3个月以上',
+   summary:'支持海外B2B广告相关项目推进，参与AI相关项目调研与需求协同，协助行业研究与竞品分析。',
+   keywords:['商业化变现','海外广告投放','用户获取','效果广告','AI项目支持','竞品分析']},
+  {id:15,title:'b2b产品经理',company:'跨境电商(CRM系统)',level:'社招',aiTier:'adjacent',
+   deadline:'长期招聘',
+   summary:'对接海外B2B营销IT需求(CRM/销售线索/客户管理)，跟踪AI及数字化趋势，需1年以上IT产品经验。',
+   keywords:['CRM系统','B2B营销','英语工作语言','项目管理','数字化趋势','1年经验']},
+  {id:16,title:'AI产品经理',company:'未公开(IT系统对接)',level:'社招',aiTier:'core',
+   deadline:'长期招聘',
+   summary:'挖掘AI落地场景，参与AI产品技术架构设计(API/微服务)，搭建效果评估体系，关注AIGC前沿应用。',
+   keywords:['技术架构设计','API接口','微服务','数据驱动优化','AIGC','跨团队协作']},
+  {id:17,title:'产品经理-AI或金融方向',company:'未公开',level:'校招',aiTier:'adjacent',
+   deadline:'2026届',
+   summary:'负责平台系统产品架构梳理与需求管控，撰写PRD/SRS，推动UAT验收，机械/自动化专业更佳。',
+   keywords:['PRD','SRS','UAT验收','Axure','Mindmap','需求管控']}
+];
+
+const aiLabelMap = {core:'核心AI',adjacent:'AI关联',none:'无AI'};
+let scoresMap = null;
+const filterState = {level:'all', ai:'all'};
+
+function scoreBand(score){
+  if(score >= 60) return 'good';
+  if(score >= 35) return 'mid';
+  return 'low';
+}
+
+function jobCardHTML(job){
+  const sd = scoresMap ? scoresMap[job.id] : null;
+  const badge = sd ? `<span class="score-badge ${scoreBand(sd.score)}">${sd.score}% 匹配</span>` : '';
+  const chips = job.keywords.map(k => {
+    if(!sd) return `<span class="chip-kw neutral">${k}</span>`;
+    const isMatched = sd.matched.indexOf(k) !== -1;
+    return `<span class="chip-kw ${isMatched ? 'matched' : 'missing'}">${k}</span>`;
+  }).join('');
+  return `
+  <div class="job-card">
+    <div class="job-card-head">
+      <span class="tag level-${job.level}">${job.level}</span>
+      <span class="tag ai-${job.aiTier}">${aiLabelMap[job.aiTier]}</span>
+      ${badge}
+    </div>
+    <h3>${job.title}</h3>
+    <p class="company">${job.company} · ${job.deadline}</p>
+    <p class="summary">${job.summary}</p>
+    <div class="kw-list">${chips}</div>
+  </div>`;
+}
+
+function renderJobGrid(){
+  let list = jobs.filter(j =>
+    (filterState.level === 'all' || j.level === filterState.level) &&
+    (filterState.ai === 'all' || j.aiTier === filterState.ai)
+  );
+  if(scoresMap){
+    list = list.slice().sort((a,b) => scoresMap[b.id].score - scoresMap[a.id].score);
+  }
+  const grid = document.getElementById('jobGrid');
+  if(list.length === 0){
+    grid.innerHTML = '<div class="empty-state">没有符合当前筛选条件的岗位</div>';
+    return;
+  }
+  grid.innerHTML = list.map(jobCardHTML).join('');
+}
+
+document.querySelectorAll('.filter-group').forEach(group => {
+  const key = group.getAttribute('data-filter');
+  group.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      filterState[key] = chip.getAttribute('data-value');
+      renderJobGrid();
+    });
+  });
+});
+
+document.getElementById('analyzeBtn').addEventListener('click', () => {
+  const cv = document.getElementById('cvInput').value.trim();
+  if(!cv){
+    alert('先粘贴一段简历文本吧');
+    return;
+  }
+  const cvLower = cv.toLowerCase();
+  scoresMap = {};
+  jobs.forEach(job => {
+    const matched = job.keywords.filter(k => cvLower.includes(k.toLowerCase()));
+    const missing = job.keywords.filter(k => matched.indexOf(k) === -1);
+    const score = Math.round((matched.length / job.keywords.length) * 100);
+    scoresMap[job.id] = {matched, missing, score};
+  });
+
+  const ranked = jobs.slice().sort((a,b) => scoresMap[b.id].score - scoresMap[a.id].score);
+  const best = ranked[0];
+  const avg = Math.round(jobs.reduce((sum,j) => sum + scoresMap[j.id].score, 0) / jobs.length);
+
+  document.getElementById('bestMatchName').textContent = best.title;
+  document.getElementById('bestMatchScore').textContent = scoresMap[best.id].score + '%';
+  document.getElementById('avgScore').textContent = avg + '%';
+
+  const missingCount = {};
+  jobs.forEach(j => scoresMap[j.id].missing.forEach(k => {
+    missingCount[k] = (missingCount[k] || 0) + 1;
+  }));
+  const topMissing = Object.entries(missingCount)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, 8);
+  document.getElementById('globalMissing').innerHTML = topMissing
+    .map(([k,count]) => `<span class="chip-kw missing">${k} · ${count}个岗位在看</span>`)
+    .join('');
+
+  document.getElementById('summaryPanel').style.display = 'block';
+  renderJobGrid();
+  document.getElementById('summaryPanel').scrollIntoView({behavior:'smooth', block:'nearest'});
+});
+
+renderJobGrid();
+</script>
+</body>
+</html>
