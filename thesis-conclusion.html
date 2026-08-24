@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Runs the Engine. People Hold the Gate.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #EFF0EC;
+    --surface: #FFFFFF;
+    --ink: #1B2430;
+    --ink-soft: #4A5568;
+    --line: #D8D9D2;
+    --blue: #26547C;
+    --blue-soft: #DCE7EE;
+    --red: #8B3A2B;
+    --red-soft: #F1DFD9;
+    --gold: #B4860B;
+    --gold-soft: #F1E7CB;
+    --rail-w: 3px;
+    --maxw: 780px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Source Serif 4', serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.disp{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  .mono{
+    font-family:'IBM Plex Mono', monospace;
+  }
+  a{color:inherit;}
+  ::selection{background:var(--gold-soft);}
+
+  @media (prefers-reduced-motion: no-preference){
+    .reveal{
+      opacity:0;
+      transform:translateY(18px);
+      transition:opacity .7s ease, transform .7s ease;
+    }
+    .reveal.visible{opacity:1; transform:translateY(0);}
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:92vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding: 8vh 6vw 10vh;
+    position:relative;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.72rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:1.6rem;
+  }
+  .eyebrow::before{
+    content:"●";
+    color:var(--red);
+    margin-right:.6em;
+    font-size:.6em;
+    vertical-align:middle;
+  }
+  .hero h1{
+    font-size:clamp(2.4rem, 6.4vw, 5rem);
+    line-height:1.03;
+    max-width:16ch;
+  }
+  .hero h1 .soft{color:var(--blue);}
+  .hero h1 .stop{color:var(--red);}
+  .hero-sub{
+    max-width:52ch;
+    margin-top:2rem;
+    font-size:clamp(1.05rem,1.6vw,1.3rem);
+    color:var(--ink-soft);
+  }
+  .hero-meta{
+    margin-top:3.5rem;
+    display:flex;
+    gap:2.2rem;
+    flex-wrap:wrap;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.75rem;
+    color:var(--ink-soft);
+  }
+  .hero-meta span b{color:var(--ink); font-weight:500;}
+
+  .scroll-cue{
+    position:absolute;
+    bottom:3.4vh;
+    left:6vw;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.7rem;
+    color:var(--ink-soft);
+    letter-spacing:.08em;
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+  }
+  .scroll-cue .ln{width:26px;height:1px;background:var(--ink-soft);}
+
+  /* ---------- STAT STRIP ---------- */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    border-bottom:1px solid var(--line);
+  }
+  .stat{
+    padding:2.6rem 1.6rem;
+    border-right:1px solid var(--line);
+  }
+  .stat:last-child{border-right:none;}
+  .stat .num{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:clamp(1.7rem,3vw,2.5rem);
+    color:var(--blue);
+  }
+  .stat .num.red{color:var(--red);}
+  .stat .lbl{
+    margin-top:.5rem;
+    font-size:.82rem;
+    color:var(--ink-soft);
+    max-width:22ch;
+  }
+  @media (max-width:760px){
+    .stats{grid-template-columns:1fr 1fr;}
+    .stat{border-bottom:1px solid var(--line);}
+  }
+
+  /* ---------- SECTION SHELL ---------- */
+  section.block{
+    padding:7rem 6vw;
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .block-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:2rem;
+    margin-bottom:3.5rem;
+    border-bottom:1px solid var(--line);
+    padding-bottom:1.4rem;
+  }
+  .block-head h2{
+    font-size:clamp(1.6rem,3vw,2.3rem);
+  }
+  .block-head .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.72rem;
+    color:var(--ink-soft);
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .lede{
+    max-width:66ch;
+    color:var(--ink-soft);
+    font-size:1.08rem;
+    margin-bottom:3rem;
+  }
+
+  /* ---------- RAIL (signature element) ---------- */
+  .rail-wrap{
+    position:relative;
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 6vw 7rem;
+  }
+  .rail-track{
+    position:absolute;
+    left:calc(6vw + 21px);
+    top:0;
+    bottom:96px;
+    width:var(--rail-w);
+    background:var(--line);
+  }
+  .rail-fill{
+    position:absolute;
+    left:calc(6vw + 21px);
+    top:0;
+    width:var(--rail-w);
+    background:linear-gradient(to bottom, var(--blue), var(--blue) 78%, var(--red));
+    height:0%;
+    transition:height .1s linear;
+  }
+  .station{
+    position:relative;
+    padding-left:64px;
+    padding-bottom:5.5rem;
+  }
+  .station:last-child{padding-bottom:0;}
+  .station .node{
+    position:absolute;
+    left:0;
+    top:.3rem;
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    background:var(--surface);
+    border:2px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.72rem;
+    font-weight:500;
+    color:var(--ink-soft);
+    z-index:2;
+    transition:border-color .4s ease, color .4s ease, background .4s ease;
+  }
+  .station.on .node{
+    border-color:var(--blue);
+    color:var(--blue);
+    background:var(--blue-soft);
+  }
+  .station.gate .node{
+    border-radius:6px;
+  }
+  .station.gate.on .node{
+    border-color:var(--red);
+    color:var(--red);
+    background:var(--red-soft);
+  }
+  .station h3{
+    font-size:1.4rem;
+    margin-bottom:.3rem;
+  }
+  .station .role{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.72rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--blue);
+    margin-bottom:.9rem;
+    display:block;
+  }
+  .station.gate .role{color:var(--red);}
+  .station p{
+    max-width:62ch;
+    color:var(--ink-soft);
+  }
+  .station .detail-grid{
+    margin-top:1.4rem;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:1rem 2rem;
+  }
+  .detail{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:1.1rem 1.3rem;
+  }
+  .detail .k{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--ink-soft);
+    margin-bottom:.4rem;
+  }
+  .detail .v{font-size:.95rem;}
+  @media (max-width:640px){
+    .station .detail-grid{grid-template-columns:1fr;}
+  }
+
+  .gate-callout{
+    margin-top:1.6rem;
+    border-left:3px solid var(--red);
+    background:var(--red-soft);
+    padding:1.1rem 1.4rem;
+    border-radius:0 8px 8px 0;
+    max-width:62ch;
+  }
+  .gate-callout .k{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--red);
+    margin-bottom:.4rem;
+  }
+
+  /* ---------- TAM (two column) ---------- */
+  .tam-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:2.5rem;
+  }
+  .tam-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:2.2rem;
+  }
+  .tam-card h3{
+    font-size:1.25rem;
+    margin-bottom:.3rem;
+  }
+  .tam-card .sub{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.7rem;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    margin-bottom:1.4rem;
+    display:block;
+  }
+  .tam-card ul{
+    margin:0;
+    padding:0;
+    list-style:none;
+  }
+  .tam-card li{
+    padding:.9rem 0;
+    border-top:1px solid var(--line);
+    font-size:.96rem;
+    color:var(--ink-soft);
+  }
+  .tam-card li:first-of-type{border-top:none;}
+  .tam-card li b{color:var(--ink); font-weight:500;}
+  @media (max-width:760px){.tam-grid{grid-template-columns:1fr;}}
+
+  /* ---------- CHALLENGES ---------- */
+  .chal-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1.6rem;
+  }
+  .chal-card{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:1.8rem;
+    background:var(--surface);
+  }
+  .chal-card .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.75rem;
+    color:var(--gold);
+    margin-bottom:.8rem;
+  }
+  .chal-card h3{font-size:1.08rem; margin-bottom:.6rem;}
+  .chal-card p{font-size:.92rem; color:var(--ink-soft); margin:0;}
+  @media (max-width:820px){.chal-grid{grid-template-columns:1fr;}}
+
+  /* ---------- CLOSE ---------- */
+  .close{
+    background:var(--ink);
+    color:var(--bg);
+    padding:8rem 6vw;
+    text-align:center;
+  }
+  .close .eyebrow{color:#9AA5B4;}
+  .close .eyebrow::before{color:var(--gold);}
+  .close h2{
+    font-size:clamp(1.9rem,4.2vw,3.1rem);
+    max-width:20ch;
+    margin:0 auto;
+    line-height:1.15;
+  }
+  .close h2 .soft{color:#7FA8CC;}
+  .close h2 .stop{color:#D98C77;}
+  .close p{
+    max-width:56ch;
+    margin:2rem auto 0;
+    color:#B7BEC9;
+    font-size:1.05rem;
+  }
+  .gate-glyph{
+    width:120px;
+    margin:3rem auto 0;
+    opacity:.9;
+  }
+
+  footer{
+    padding:2.4rem 6vw;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:.7rem;
+    color:var(--ink-soft);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:.6rem;
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="eyebrow">Thesis Conclusion — Generative AI in Swedish Enterprise Innovation</div>
+  <h1>AI runs the <span class="soft">engine.</span><br>People still hold the <span class="stop">gate.</span></h1>
+  <p class="hero-sub">Across Swedish enterprises, generative AI has embedded itself deep inside the Stage-Gate innovation process — scanning markets, drafting MVPs, stress-testing plans. But at every point where risk becomes irreversible, the process still stops for a human signature.</p>
+  <div class="hero-meta">
+    <span>Model <b>Technology Acceptance Model (TAM)</b></span>
+    <span>Framework <b>Stage-Gate Process</b></span>
+    <span>Scope <b>Swedish enterprises, 10+ employees</b></span>
+  </div>
+  <div class="scroll-cue"><div class="ln"></div>SCROLL</div>
+</section>
+
+<div class="stats reveal">
+  <div class="stat">
+    <div class="num">25.1<span style="font-size:.5em;">→</span>35.0<span style="font-size:.6em;">%</span></div>
+    <div class="lbl">Share of enterprises using AI, 2024 → 2025</div>
+  </div>
+  <div class="stat">
+    <div class="num">71.9<span style="font-size:.6em;">%</span></div>
+    <div class="lbl">Large enterprises using AI, vs. 30.8% of small ones</div>
+  </div>
+  <div class="stat">
+    <div class="num">62.1<span style="font-size:.6em;">%</span></div>
+    <div class="lbl">Prefer buying ready-made systems over building their own</div>
+  </div>
+  <div class="stat">
+    <div class="num red">74.7<span style="font-size:.6em;">%</span></div>
+    <div class="lbl">Of non-adopters cite lack of in-house expertise</div>
+  </div>
+</div>
+
+<section class="block">
+  <div class="block-head reveal">
+    <h2>The pipeline, station by station</h2>
+    <div class="tag">Stage-Gate × Generative AI</div>
+  </div>
+  <p class="lede reveal">Generative AI hasn't replaced Stage-Gate — it's been absorbed by it, unevenly. It does the most work early, gets used as a sparring partner in the middle, and is deliberately kept at arm's length as decisions get closer to money, customers, and people.</p>
+</section>
+
+<div class="rail-wrap">
+  <div class="rail-track"></div>
+  <div class="rail-fill" id="railFill"></div>
+
+  <div class="station reveal" data-station>
+    <div class="node mono">01</div>
+    <span class="role">Front End · Discovery</span>
+    <h3>AI as translator and filter</h3>
+    <p>Before a project has a name, AI is already scanning unstructured data, mapping competitors, and clearing language out of the way — compressing a four-hour Japanese translation into thirty seconds, and quieting meeting notes down to what actually matters.</p>
+    <div class="detail-grid">
+      <div class="detail"><div class="k">Function</div><div class="v">Information funnel & cross-border translator</div></div>
+      <div class="detail"><div class="k">Effect</div><div class="v">Removes language barriers and information noise</div></div>
+    </div>
+  </div>
+
+  <div class="station reveal" data-station>
+    <div class="node mono">02</div>
+    <span class="role">Middle Stage · Development &amp; Validation</span>
+    <h3>Where AI does its heaviest lifting</h3>
+    <p>Non-technical founders build zero-code MVPs. Flowcharts and stakeholder decks generate themselves. And managers deliberately feed their own Gantt charts and risk assessments back to AI, using it as a critical reviewer to catch the flaws their own optimism would miss.</p>
+    <div class="detail-grid">
+      <div class="detail"><div class="k">Function</div><div class="v">Builder, presenter, and adversarial reviewer</div></div>
+      <div class="detail"><div class="k">Effect</div><div class="v">Lowers the technical bar; counters human optimism bias</div></div>
+    </div>
+  </div>
+
+  <div class="station reveal" data-station>
+    <div class="node mono">03</div>
+    <span class="role">Back End · Commercialization</span>
+    <h3>The caution zone begins</h3>
+    <p>This is where enthusiasm cools. A chatbot handed customer service without care can quietly wreck trust that took years to build. And no amount of digital modeling substitutes for physical reality — teams still place an "entrepreneur in residence" inside a senior care facility to watch, in person, what actually happens.</p>
+    <div class="detail-grid">
+      <div class="detail"><div class="k">Risk</div><div class="v">Chatbots degrading the customer experience</div></div>
+      <div class="detail"><div class="k">Boundary</div><div class="v">Physical, human feedback still can't be simulated</div></div>
+    </div>
+  </div>
+
+  <div class="station gate reveal" data-station>
+    <div class="node mono">⛊</div>
+    <span class="role">Decision Gate · Strategic Commitment</span>
+    <h3>Humans keep the final signature</h3>
+    <p>When the question becomes something like "do we enter the Spanish market," managers do not hand that decision to a model — categorically. Generative AI can overstate the importance of the wrong detail, or simply hallucinate one. So every conclusion that matters passes through a human double-check before it becomes a commitment.</p>
+    <div class="gate-callout">
+      <div class="k">Why the line holds</div>
+      AI's fluency is not the same as AI's judgment. Confidence in an answer is not evidence the answer is correct.
+    </div>
+  </div>
+</div>
+
+<section class="block">
+  <div class="block-head reveal">
+    <h2>Why enterprises adopt — and why some don't</h2>
+    <div class="tag">Read through TAM</div>
+  </div>
+  <div class="tam-grid">
+    <div class="tam-card reveal">
+      <h3>Perceived Usefulness</h3>
+      <span class="sub">Why AI earns its place</span>
+      <ul>
+        <li><b>Time reclaimed.</b> Processing large spreadsheets and summarizing reports, done in a fraction of the time.</li>
+        <li><b>Instant expertise.</b> AI acts as a mentor, translating unfamiliar domains — electronic sensors, dense patents — into something a non-specialist can act on.</li>
+        <li><b>Demographic pressure.</b> For firms like Sony's Japan headquarters, an aging workforce turns AI adoption from a preference into a necessity for preserving institutional knowledge.</li>
+      </ul>
+    </div>
+    <div class="tam-card reveal">
+      <h3>Perceived Ease of Use</h3>
+      <span class="sub">What determines whether it sticks</span>
+      <ul>
+        <li><b>Prompting is a real barrier.</b> Many employees find effective prompt engineering genuinely difficult.</li>
+        <li><b>Pre-loaded context helps.</b> Large firms build internal tools — like a company-specific hub — pre-loaded with organizational knowledge to lower that bar.</li>
+        <li><b>Conversation over commands.</b> Agile teams push for natural, anthropomorphic dialogue instead of rigid prompt syntax — and dedicated "AI tool scouts" to keep everyone current.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="block-head reveal">
+    <h2>What holds the line back</h2>
+    <div class="tag">Limits & open questions</div>
+  </div>
+  <div class="chal-grid">
+    <div class="chal-card reveal">
+      <div class="num mono">01</div>
+      <h3>Trade secrets stay offline</h3>
+      <p>Confidentiality agreements bar employees — packaging designers, for instance — from feeding proprietary parameters into external tools like Midjourney or Adobe's AI. The safer, in-house alternative is simply less capable.</p>
+    </div>
+    <div class="chal-card reveal">
+      <div class="num mono">02</div>
+      <h3>Expertise, not access, is the bottleneck</h3>
+      <p>Nearly three in four non-adopting firms point to a lack of relevant expertise, not a lack of tools. Some leaders still see generic Copilot use as the ceiling, not the floor.</p>
+    </div>
+    <div class="chal-card reveal">
+      <div class="num mono">03</div>
+      <h3>Cost to sustainability and craft</h3>
+      <p>Designers raise the energy and water cost of scale AI alongside a subtler worry: that AI's default answer is the simplest one, and that leaning on it too far erodes empathy, intuition, and communication skill.</p>
+    </div>
+  </div>
+</section>
+
+<div class="close">
+  <div class="eyebrow">Thesis conclusion</div>
+  <h2>AI has become the <span class="soft">engine</span> of Swedish innovation work — without ever being handed the <span class="stop">keys.</span></h2>
+  <p>Adoption is real and accelerating, but it is bounded on purpose. Enterprises are not choosing between human and artificial judgment — they are routing each toward the stage of the process it is actually suited for, and refusing to blur the line at the gate.</p>
+</div>
+
+<footer>
+  <span>Generative AI &amp; the Stage-Gate Process — Swedish Enterprise Study</span>
+  <span>Sources: national enterprise ICT/AI usage statistics · TAM interviews</span>
+</footer>
+
+<script>
+  // Scroll-reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, {threshold:.15});
+  revealEls.forEach(el=>io.observe(el));
+
+  // Station "on" state as they pass into view
+  const stations = document.querySelectorAll('[data-station]');
+  const sIo = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting) e.target.classList.add('on');
+    });
+  }, {threshold:.4});
+  stations.forEach(s=>sIo.observe(s));
+
+  // Rail fill proportional to scroll through the rail-wrap
+  const railWrap = document.querySelector('.rail-wrap');
+  const railFill = document.getElementById('railFill');
+  function updateRail(){
+    const rect = railWrap.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const total = rect.height;
+    let progressed = vh * 0.55 - rect.top;
+    progressed = Math.max(0, Math.min(progressed, total));
+    const pct = total > 0 ? (progressed/total)*100 : 0;
+    railFill.style.height = pct + '%';
+  }
+  window.addEventListener('scroll', updateRail, {passive:true});
+  window.addEventListener('resize', updateRail);
+  updateRail();
+</script>
+
+</body>
+</html>
